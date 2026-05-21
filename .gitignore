@@ -1,0 +1,21 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+.vscode/
+.idea/
+
+# Generated vault outputs
+00_collection_overview.md
+_ProcessLog_*.md
+01_original_pdf/
+02_original_md/
+03_reading_notes/
+04_deep_reading_notes/
+_workflow/
+output/
+ES/
+
+# Local environment
+.env
+.venv/
+venv/
