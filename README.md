@@ -22,6 +22,48 @@ The workflow is designed for research projects where a user needs to process man
 
 The script intentionally does not pretend to perform deep reading. It handles export, conversion, metadata extraction, and skim-note generation. Full-text interpretation remains the agent's responsibility.
 
+## Install With an AI Agent
+
+Most users will not install this skill manually file by file. A more realistic path is to let an AI coding agent install and configure it inside the local skill directory, then help the user connect it to Zotero and an optional Markdown knowledge base.
+
+For agents, the practical installation flow is:
+
+1. Clone or download this repository.
+2. Place the folder in the local skills directory, for example:
+   - `%USERPROFILE%\\.codex\\skills\\zotero-vault-batch-reading`
+   - or another skill search path used by the local agent runtime.
+3. Install Python dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+4. Verify that Zotero Desktop is running and that the local API is reachable:
+
+```bash
+curl http://127.0.0.1:23119/api/users/0/collections
+```
+
+5. Ask the user which Zotero collection should be processed and what output directory should be used.
+6. Run `prepare` or `all` mode for the first pass.
+7. Use the prompts in `prompts/` to gather research context, recommend deep-reading candidates, and write full-text notes.
+
+For a Chinese walkthrough aimed at real users and real agent sessions:
+
+- [Skill introduction](INTRODUCTION.zh-CN.md)
+- [Detailed setup guide](SETUP_GUIDE.zh-CN.md)
+
+## What Users Need to Configure
+
+There are only a few hard requirements:
+
+- **Required**: Zotero Desktop
+- **Required**: Zotero local API at `127.0.0.1:23119`
+- **Required**: Python 3.8+ and the dependencies in `requirements.txt`
+- **Optional**: Obsidian or another Markdown knowledge base
+
+Obsidian is not a prerequisite. This skill writes ordinary Markdown folders. Obsidian simply makes the resulting vault easier to browse, cross-link, and maintain over time.
+
 ## Repository Layout
 
 ```text
