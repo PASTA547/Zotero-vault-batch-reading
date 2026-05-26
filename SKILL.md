@@ -135,18 +135,30 @@ The user can:
 Claude reads the full Markdown text of selected papers and writes comprehensive notes.
 
 ### Process
-1. Read the FULL Markdown file in `02_original_md/` for each selected paper
-2. Extract: specific numbers, methods details, formulas, data sources, findings with page references
-3. Write detailed notes → `04_deep_reading_notes/`
-4. Use parallel agent invocations when the runtime supports them; otherwise process selected papers sequentially
+1. Read the FULL Markdown file in `02_original_md/` for each selected paper.
+2. Extract: specific numbers, methods details, formulas, data sources, findings with page references.
+3. **图表设计与出图思路提取**：在精读论文正文时，特别提取出图思路：
+   - **图表服务的研究目标**：该图表是为了阐明或支撑哪个具体的研究目标/假说而设计的？
+   - **图例与标题提取**：记录论文中核心图表的图例说明（Captions/Legends），以便在没有直接视觉图像的情况下理解作者呈现了哪些图表。
+   - **正文图表解释与分析**：提取并总结正文段落中作者是如何具体解释、剖析及引用这些图表的（如趋势、规律、特殊拐点等）。
+4. Write detailed notes → `04_deep_reading_notes/<filename>.md`
+5. **元数据卡片（.meta.md）自动维护与分级读取机制**：
+   - **自动伴随生成**：在输出精读笔记的同时，**必须自动且默认**在同级目录下为该文献创建一个极其精炼的 `.meta.md` 卡片文件（`04_deep_reading_notes/<filename>.meta.md`）。卡片 Token 限制在 800 字内，包含以下核心模块：
+     1. `研究目标与核心假说`（一句话点明核心）
+     2. `关键变量与识别逻辑`（方法学、自变量、因变量、主要控制变量或识别设计）
+     3. `出图思路与图表释义`（结合图例列出作者为支撑研究目标而设计的关键图表，并总结作者在正文中的图表解释逻辑）
+     4. `核心结论与研究局限`
+   - **分级读取机制**：在跨文献对比、检索或批量分析时，**必须优先且仅读取该 `.meta.md` 卡片**，以极速降低 Token 消耗。只有在卡片信息不足或用户要求深度溯源时，才去读取完整的精读笔记 `.md` 文件。
+6. Use parallel agent invocations when the runtime supports them; otherwise process selected papers sequentially.
 
 ### Deep Note Characteristics (~15-30 KB each)
-- All template sections filled with detail from the body text
-- Formulas with LaTeX rendering and symbol breakdowns
-- 5-8 pairs of "主要发现 + 原文引用" with page/section markers
-- Specific numbers: frequencies, exposure person-days, mortality counts, CIs
-- Model names, resolutions, validation metrics (R², RMSE)
-- Personalized judgment: transferable methods, follow-up questions, research connection
+- All template sections filled with detail from the body text.
+- **关键图表设计与作者释义** section fully detailed (combining plotting ideas, legends, and text discussions).
+- Formulas with LaTeX rendering and symbol breakdowns.
+- 5-8 pairs of "主要发现 + 原文引用" with page/section markers.
+- Specific numbers: frequencies, exposure person-days, mortality counts, CIs.
+- Model names, resolutions, validation metrics (R², RMSE).
+- Personalized judgment: transferable methods, follow-up questions, research connection.
 
 ### Agent Dispatch Pattern
 See `prompts/deep_reading.md` for the full agent prompt. Dispatch 2-3 agents in parallel, each handling 2-3 papers:
@@ -163,8 +175,8 @@ After deep reading completes:
 1. Update `00_collection_overview.md` to a dual-column format:
    - `泛读(03)` column links to skim notes
    - `精读(04)` column links to deep notes (or `-` if not deep-read)
-2. Add a summary table of deep-read papers with key findings
-3. Verify: 03 has all papers, 04 has only deep-read papers
+2. Add a summary table of deep-read papers with key findings.
+3. Verify: 03 has all papers, 04 has only deep-read papers.
 
 ## Output Contract
 
@@ -175,7 +187,7 @@ After deep reading completes:
   01_original_pdf\                  ← PDF copies
   02_original_md\                   ← Markdown (reading substrate)
   03_reading_notes\                 ← SKIM: auto-generated, all papers
-  04_deep_reading_notes\            ← DEEP: Claude full-text, selected papers
+  04_deep_reading_notes\            ← DEEP: Claude full-text, selected papers (contains .md and .meta.md pairs)
   _workflow\
     collection_items.json
 ```
