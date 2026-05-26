@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.2.0 (2026-05-26)
+
+### Retrieval and naming alignment
+
+- Merged the local vault-retrieval enhancements into `zotero-vault-batch-reading` instead of keeping them as a separately named workflow.
+- Added Phase 6 retrieval guidance so the populated reading vault can answer questions with evidence-only responses.
+- Added `.meta.md` sibling-card requirements for deep-reading outputs to support low-token retrieval.
+- Added `prompts/vault_retrieval.md` as the retrieval-mode prompt.
+- Updated README and SKILL documentation so the public-facing project name and internal workflow name are consistently `zotero-vault-batch-reading`.
+
 ## v2.1.0 (2026-05-21)
 
 ### Reliability fixes
@@ -14,46 +24,29 @@
 
 ### Architecture redesign: Two-tier reading workflow
 
-**Breaking changes from v1.x:**
+Breaking changes from v1.x:
 
-- Script no longer claims to produce "精读" (deep reading) notes. The script output in `03_reading_notes/` is now explicitly labeled as **泛读 (skim)** — auto-generated from metadata and abstracts only.
-- Deep reading (`04_deep_reading_notes/`) is now exclusively done by Claude, reading the full Markdown text.
-- Added **Phase 0 (Onboarding)**: Claude asks about user's research context before processing.
-- Added **Phase 3 (Recommend)**: After skim notes are generated, Claude scores papers against the user's research context and recommends which to deep-read.
+- Script no longer claims to produce deep-reading notes. The script output in `03_reading_notes/` is explicitly labeled as skim-level notes generated from metadata and abstracts only.
+- Deep reading in `04_deep_reading_notes/` is now exclusively done by the agent reading the full Markdown text.
+- Added Phase 0 onboarding so the agent asks about research context before processing.
+- Added Phase 3 recommendation so the agent scores papers against the user's research context before deep reading.
 
 ### New files
 
-- `README.md` — User-facing guide with prerequisites, quick start, output structure, and tips
-- `prompts/onboarding.md` — Research context interview prompt for Phase 0
-- `prompts/recommend.md` — Paper recommendation scoring and presentation prompt for Phase 3
-- `prompts/deep_reading.md` — Full-text deep reading agent prompt for Phase 4
-- `CHANGELOG.md` — This file
+- `README.md`
+- `prompts/onboarding.md`
+- `prompts/recommend.md`
+- `prompts/deep_reading.md`
+- `CHANGELOG.md`
 
 ### Changed files
 
-- `SKILL.md` — Complete rewrite: 5-phase workflow documentation, file reference table
-- `scripts/run_zotero_vault_batch_reading.py` — Major changes:
-  - `build_note()` → `build_skim_note()`: renamed and updated to label output as 泛读
-  - `--mode notes` → `--mode skim`: renamed for clarity
-  - Frontmatter now includes `泛读` tag
-  - Overview template updated with two-tier note structure placeholder
-  - Added explicit "泛读说明" section in method analysis
-  - End-of-script message directs Claude to Phase 0 onboarding
+- `SKILL.md`: full workflow documentation
+- `scripts/run_zotero_vault_batch_reading.py`: updated around skim mode, note labeling, and overview generation
 
-### Concept changes
+## v1.0.0
 
-| v1.x | v2.0 |
-|------|------|
-| Script does everything | Script does mechanical, Claude does intellectual |
-| `notes` mode | `skim` mode |
-| Notes presented as "精读" | Notes explicitly labeled as "泛读" |
-| No user context integration | Research-context-aware recommendations |
-| No paper triage | Smart recommendation before deep reading |
-| Single output layer | Dual-layer: 03 skim + 04 deep |
-
-## v1.0.0 (earlier)
-
-- Initial implementation: PDF to Markdown conversion + auto note generation
+- Initial implementation: PDF to Markdown conversion plus auto note generation
 - Local Zotero API integration
 - Basic keyword-based paper classification
-- Single-pass note generation from metadata + abstract
+- Single-pass note generation from metadata and abstract

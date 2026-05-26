@@ -1,56 +1,77 @@
-# Deep Reading Agent Prompt
+# Deep Reading Prompt
 
-Use this prompt when dispatching agents for Phase 4 (deep reading). One agent invocation per 2-3 papers for optimal parallel processing.
+Use this prompt when dispatching agents for Phase 4 deep reading. One agent invocation per 2-3 papers is a good default when parallel execution is available.
 
 ---
 
 ## Task
 
-Write DETAILED Chinese reading notes for the assigned papers based on FULL-TEXT reading of their Markdown files.
+Write detailed Chinese reading notes for the assigned papers based on full-text reading of their Markdown files.
+
+Also write one compact sibling `.meta.md` retrieval card per paper.
 
 ## Template
 
-Read `templates/论文精读模板.md` FIRST. Follow its structure EXACTLY:
+Read `templates/论文精读模板.md` first and follow its structure exactly.
 
-1. **YAML frontmatter** — all 10 metadata fields filled
-2. **基本信息** — table with author, year, source, topic, link
-3. **分类判断** — classification tag + basis
-4. **一句话摘要** — one Chinese sentence: who, what method, what finding
-5. **研究对象** — object, core question, context/scope
-6. **研究方法** — method type, overall approach, rationale, detailed analysis with formula breakdowns
-7. **数据来源** — data type, sample, time range, sample size, limitations
-8. **研究结论** — 5-8 pairs of "主要发现 N" + "原文引用 N" with direct English quotes and page/section references
-9. **我的判断** — most inspiring point, transferable methods, follow-up questions, relevance to my research
-10. **原始语料** — Zotero link, DOI, PDF path, Markdown path
-11. **摘要原文** — full original abstract
+Required output elements:
+1. YAML frontmatter with all metadata fields filled
+2. Structured note sections in the exact template order
+3. Source-grounded findings, methods, formulas, and limitations
+4. Traceability links back to Zotero, DOI, PDF path, and Markdown path
 
 ## Quality Requirements
 
 ### Must Include
-- **Specific numbers**: event frequencies, exposure person-days, mortality counts, percentage changes, confidence intervals
-- **Method details**: model names, spatial/temporal resolution, thresholds, algorithms, validation metrics (R², RMSE)
-- **Formulas**: key equations with symbol explanations and step mapping (use LaTeX `$$` blocks)
-- **Direct quotes**: original English text from the paper with page/section markers, paired with Chinese findings
-- **Data sources**: exact dataset names, versions, URLs from the paper
 
-### Must NOT
+- Specific numbers such as event frequencies, exposure person-days, mortality counts, percentage changes, and confidence intervals when present
+- Method details such as model names, spatial or temporal resolution, thresholds, algorithms, and validation metrics
+- Key formulas with symbol explanations and step mapping when present
+- Direct quotes from the paper with page or section markers when useful
+- Exact dataset names, versions, or sources mentioned by the paper
+
+### Must Not
+
 - Fabricate details not in the paper
-- Use only the abstract — read the FULL Markdown
-- Skip template sections — if information is truly missing, state "论文正文未提供，需查补充材料"
-- Write in English (except for direct quotes in 原文引用)
+- Use only the abstract
+- Skip template sections without explanation
+- Write the full note in English except for direct quotes
 
-## Length
-
-2000-4000 words per note (Chinese). The note should be comprehensive enough that another researcher could understand the paper's full methodology and findings without reading the original.
+If information is truly missing, say so plainly.
 
 ## Output Location
 
-Write to `04_deep_reading_notes/<filename>.md` using the same filename stem as the corresponding file in `03_reading_notes/`.
+Write the full note to:
+
+```text
+04_deep_reading_notes/<filename>.md
+```
+
+Then write the sibling retrieval card to:
+
+```text
+04_deep_reading_notes/<filename>.meta.md
+```
+
+## `.meta.md` Card Format
+
+Keep the card compact, ideally within 800 Chinese characters. Use exactly these sections:
+
+1. `研究目标与核心假说`
+2. `关键变量与识别逻辑`
+3. `出图思路与图表释义`
+4. `核心结论与研究局限`
+
+The card must be extracted from the full note or source paper only. Do not invent missing information.
+
+## Length
+
+Aim for roughly 2000-4000 Chinese words per full note unless the source paper is unusually short.
 
 ## Parallel Processing
 
-When processing multiple papers, use background or parallel agent calls if the runtime supports them, dispatching 2-3 papers per agent. If no parallel agent tool is available, process papers sequentially with the same assignment structure and keep one output file per paper.
+When processing multiple papers, use parallel agent calls if the runtime supports them, dispatching 2-3 papers per agent. If no parallel tool is available, process papers sequentially with one output pair per paper.
 
 ## Paper Assignments
 
-[INSERT SPECIFIC PAPER ASSIGNMENTS HERE — one per Agent invocation]
+[INSERT SPECIFIC PAPER ASSIGNMENTS HERE]

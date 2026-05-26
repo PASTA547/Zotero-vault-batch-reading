@@ -1,36 +1,40 @@
 # Zotero Vault Batch Reading
 
-`zotero-vault-batch-reading` is a Claude/Codex skill for turning a Zotero collection into a structured Markdown reading vault. It separates mechanical batch work from intellectual reading work:
+`zotero-vault-batch-reading` is a Claude/Codex skill for turning a Zotero collection into a structured Markdown reading vault and then querying that vault as an evidence-only literature knowledge base.
 
-- `01_original_pdf/`: copied Zotero PDF attachments.
-- `02_original_md/`: PDF-to-Markdown reading substrate.
-- `03_reading_notes/`: automatic skim notes generated from Zotero metadata, abstracts, and converted Markdown.
-- `04_deep_reading_notes/`: agent-written deep reading notes based on full-text Markdown.
-- `00_collection_overview.md`: two-layer collection index linking skim and deep notes.
+It separates mechanical batch work from intellectual reading work:
 
-The workflow is designed for research projects where a user needs to process many papers, triage them against a research question, and then deep-read the most relevant papers without losing traceability to Zotero, PDFs, and local Markdown files.
+- `01_original_pdf/`: copied Zotero PDF attachments
+- `02_original_md/`: PDF-to-Markdown reading substrate
+- `03_reading_notes/`: automatic skim notes generated from Zotero metadata, abstracts, and converted Markdown
+- `04_deep_reading_notes/`: agent-written deep reading notes based on full-text Markdown
+- `04_deep_reading_notes/*.meta.md`: compact retrieval cards for low-token evidence lookup
+- `00_collection_overview.md`: two-layer collection index linking skim and deep notes
+
+The workflow is designed for research projects where a user needs to process many papers, triage them against a research question, deep-read the most relevant papers, and later query the resulting vault without losing traceability to Zotero, PDFs, and local Markdown files.
 
 ## What This Skill Does
 
-1. Reads a Zotero collection through Zotero Desktop's local API.
-2. Finds PDF attachments and copies them into a local vault folder.
-3. Converts PDFs into page-marked Markdown with PyMuPDF.
-4. Generates skim-level Chinese notes for all papers.
-5. Prompts the agent to recommend papers for deep reading based on the user's research context.
-6. Guides the agent to write source-grounded deep reading notes for selected papers.
-7. Maintains a collection overview and process log.
+1. Reads a Zotero collection through Zotero Desktop's local API
+2. Finds PDF attachments and copies them into a local vault folder
+3. Converts PDFs into page-marked Markdown with PyMuPDF
+4. Generates skim-level Chinese notes for all papers
+5. Prompts the agent to recommend papers for deep reading based on the user's research context
+6. Guides the agent to write source-grounded deep reading notes for selected papers
+7. Generates compact `.meta.md` cards that summarize research aim, variables, figure logic, and limits
+8. Supports evidence-only retrieval from the populated reading vault
 
 The script intentionally does not pretend to perform deep reading. It handles export, conversion, metadata extraction, and skim-note generation. Full-text interpretation remains the agent's responsibility.
 
 ## Install With an AI Agent
 
-Most users will not install this skill manually file by file. A more realistic path is to let an AI coding agent install and configure it inside the local skill directory, then help the user connect it to Zotero and an optional Markdown knowledge base.
+Most users will not install this skill manually file by file. A practical path is to let an AI coding agent install and configure it inside the local skill directory, then help the user connect it to Zotero and an optional Markdown knowledge base.
 
 For agents, the practical installation flow is:
 
 1. Clone or download this repository.
 2. Place the folder in the local skills directory, for example:
-   - `%USERPROFILE%\\.codex\\skills\\zotero-vault-batch-reading`
+   - `%USERPROFILE%\.codex\skills\zotero-vault-batch-reading`
    - or another skill search path used by the local agent runtime.
 3. Install Python dependencies:
 
@@ -46,16 +50,14 @@ curl http://127.0.0.1:23119/api/users/0/collections
 
 5. Ask the user which Zotero collection should be processed and what output directory should be used.
 6. Run `prepare` or `all` mode for the first pass.
-7. Use the prompts in `prompts/` to gather research context, recommend deep-reading candidates, and write full-text notes.
+7. Use the prompts in `prompts/` to gather research context, recommend deep-reading candidates, write full-text notes, and later retrieve evidence from the vault.
 
-For a Chinese walkthrough aimed at real users and real agent sessions:
-
+Related guides:
 - [Skill introduction](INTRODUCTION.zh-CN.md)
 - [Detailed setup guide](SETUP_GUIDE.zh-CN.md)
+- [Vault retrieval prompt](prompts/vault_retrieval.md)
 
-## What Users Need to Configure
-
-There are only a few hard requirements:
+## Hard Requirements
 
 - **Required**: Zotero Desktop
 - **Required**: Zotero local API at `127.0.0.1:23119`
@@ -77,6 +79,7 @@ zotero-vault-batch-reading/
     onboarding.md
     recommend.md
     deep_reading.md
+    vault_retrieval.md
   scripts/
     run_zotero_vault_batch_reading.py
   templates/
@@ -85,9 +88,9 @@ zotero-vault-batch-reading/
 
 ## Prerequisites
 
-- Zotero Desktop is installed and running.
-- Zotero local API is enabled at `http://127.0.0.1:23119`.
-- Python 3.8+ is available.
+- Zotero Desktop is installed and running
+- Zotero local API is enabled at `http://127.0.0.1:23119`
+- Python 3.8+ is available
 - Python dependencies are installed:
 
 ```bash
@@ -138,13 +141,13 @@ python scripts/run_zotero_vault_batch_reading.py \
 
 ### Phase 0: Onboarding
 
-The agent gathers the user's research context before running the full reading workflow. At minimum, it should identify:
+The agent gathers the user's research context before running the workflow. At minimum, it should identify:
 
-- research topic and target hazards;
-- geographic focus;
-- research dimension, such as exposure, health burden, projection, mechanism, or policy;
-- key variables, such as PM2.5, ozone, heatwaves, mortality, and population exposure;
-- deep-reading strategy: recommend, all-core, or all.
+- research topic and target hazards
+- geographic focus
+- research dimension, such as exposure, health burden, projection, mechanism, or policy
+- key variables, such as PM2.5, ozone, heatwaves, mortality, and population exposure
+- deep-reading strategy: `recommend`, `all-core`, or `all`
 
 ### Phase 1: Prepare
 
@@ -162,9 +165,35 @@ The agent reads `00_collection_overview.md` and all skim notes, then scores pape
 
 For selected papers, the agent reads the full Markdown in `02_original_md/` and writes comprehensive notes in `04_deep_reading_notes/`. Deep notes should include methods, formulas, data sources, specific numbers, source-grounded findings, limitations, and relevance to the user's research.
 
+Each deep note should also produce a sibling `.meta.md` card for lightweight retrieval. The card should capture:
+
+- `研究目标与核心假说`
+- `关键变量与识别逻辑`
+- `出图思路与图表释义`
+- `核心结论与研究局限`
+
 ### Phase 5: Overview
 
 The collection overview should link each paper's skim note and, when available, its deep note. The process log should record newly processed or deep-read items.
+
+### Phase 6: Retrieval
+
+Once the vault has notes, the agent can answer literature questions directly from the vault.
+
+Recommended retrieval order:
+1. `00_collection_overview.md`
+2. Optional root indexes such as `文献索引.md`, `研究主题索引.md`, `研究方法索引.md`, `字段补全检查.md`
+3. Matching `.meta.md` cards
+4. Full deep or skim notes only when the cards are insufficient
+
+Default retrieval answer structure:
+1. `结论`
+2. `支持文献`
+3. `出图思路与图表释义`
+4. `差异/争议`
+5. `对我研究的启发`
+
+If the vault does not contain enough support, the answer should explicitly say `Vault 中未找到足够依据`.
 
 ## Output Contract
 
@@ -176,18 +205,20 @@ The collection overview should link each paper's skim note and, when available, 
   02_original_md/
   03_reading_notes/
   04_deep_reading_notes/
+    *.meta.md
   _workflow/
     collection_items.json
 ```
 
 ## Design Principles
 
-- Keep traceability from every note back to Zotero, DOI, PDF, and Markdown.
-- Treat `03_reading_notes/` as fast orientation, not final literature analysis.
-- Reserve `04_deep_reading_notes/` for full-text, source-grounded reading.
-- Avoid duplicate outputs by using Zotero item keys in generated file names.
-- Do not fabricate methods, formulas, data sources, or findings when they are absent from the paper.
-- Keep the user's research context visible when recommending papers.
+- Keep traceability from every note back to Zotero, DOI, PDF, and Markdown
+- Treat `03_reading_notes/` as fast orientation, not final literature analysis
+- Reserve `04_deep_reading_notes/` for full-text, source-grounded reading
+- Use `.meta.md` cards first when answering from the vault
+- Avoid duplicate outputs by using Zotero item keys in generated file names
+- Do not fabricate methods, formulas, data sources, or findings when they are absent from the paper
+- Keep the user's research context visible when recommending papers
 
 ## Notes on Privacy
 
